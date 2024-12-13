@@ -1,0 +1,7 @@
+export secret uint64 loop(secret uint64 sec, public uint64 result) {
+       for (uint64 i from 0 to 5) {
+	   if (i == sec) { return i; }
+       }
+
+       return result;
+}
