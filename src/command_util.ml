@@ -18,6 +18,7 @@ type args_record = {
   shared      : bool;
   no_inline_asm : bool;
   addl_opts   : string list;
+  jasmin_out : bool;
 }
 
 let run_command c args exit_on_error =
@@ -39,6 +40,18 @@ let run_command c args exit_on_error =
     | _ -> ret_code
 
 let generate_out_file out_dir out_file = out_dir ^ "/" ^ out_file
+
+let output_jasmin jasmin_out out_file ast = 
+  if jasmin_out then 
+    let jasmin_out_file = out_file ^ ".jazz" in
+    let ec_out_file = out_file ^ ".ec" in 
+      Log.debug "Outputting AST to %s" ec_out_file;
+      Core.Out_channel.write_all ec_out_file
+      ~data:(Codegen_jasmin.codegen_ec ast out_file ^ "\n"); (* We need to modify this s.t. it outputs an ec file *)
+
+      Log.debug "Outputting AST to %s" jasmin_out_file;
+      Core.Out_channel.write_all jasmin_out_file
+      ~data:(Codegen_jasmin.codegen ast ^ "\n")
 
 let output_ast ast_out out_file ast =
   if ast_out then
@@ -226,6 +239,7 @@ let compile (in_files,out_file,out_dir) args =
     generate_pseudo args.pseudo_out out_file' tast;
   let tast = Transbranch.transform tast in (* transform secret branchs *)
     output_tast args.ast_out out_file' tast;
+    output_jasmin args.jasmin_out out_file' tast;
     generate_pseudo args.pseudo_out out_file' tast;
   let tast = Sanitycheck.transform true tast in (* check that everything is correct after transforms *)
     output_tast args.ast_out out_file' tast;

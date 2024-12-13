@@ -16,6 +16,7 @@ let opt_level_doc = "level The level of optimization to run (O0, 01, 02, or OF)"
 let shared_opt_doc = "Generate a .so file"
 let no_inline_asm_doc = "use XOR-based selection intrinsics instead of inline assembly"
 let addl_opts_doc = "opts Additional options to pass to clang (e.g. -addl \"-mretpoline -fPIC -fno-strict-aliasing\")"
+let jasmin_doc = "Output Jasmin to file"
 
 let normalize_out_file out_file =
   Filename.chop_extension(Filename.basename out_file)
@@ -125,6 +126,7 @@ let compile_command =
       flag "-shared" no_arg ~doc:shared_opt_doc +>
       flag "-no-inline-asm" no_arg ~doc:no_inline_asm_doc +>
       flag "-addl" (listed string) ~doc:addl_opts_doc +>
+      flag "-jasmin-out" no_arg ~doc:jasmin_doc +>
       anon (sequence ("filename" %: string)))
     (fun
       out_file
@@ -138,6 +140,7 @@ let compile_command =
       shared
       no_inline_asm
       addl_opts
+      jasmin_out
       in_files () ->
       let opt_level = match opt_level with
         | Some "O0" -> O0
@@ -150,7 +153,7 @@ let compile_command =
       let args = { in_files; out_file;
                    debug; ast_out; pseudo_out;
                    llvm_out; gen_header; verify_llvm; opt_level;
-                   shared; no_inline_asm; addl_opts } in
+                   shared; no_inline_asm; addl_opts; jasmin_out } in
         set_log_level debug;
         if List.length in_files = 0 then error_exit ("factc: error: Not enough arguments. Use `-help` for usage.");
         let prep = prepare_compile out_file in_files () in
